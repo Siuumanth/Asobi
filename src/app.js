@@ -18,5 +18,15 @@ app.use(express.static("public"))
 //this means static images is in public folder
 
 
+//import routes
+import healthcheckRouter from "./routes/hlthchk.routes.js"
+
+
+
+//routes
+//this runs when the route is accessed
+app.use("/api/v1/healthcheck",healthcheckRouter)
+
+
 
 export{app}

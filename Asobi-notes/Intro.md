@@ -152,3 +152,66 @@ class ApiError extends Error{
 In JavaScript, the call stack is a data structure that keeps track of function calls in the order they need to be executed. When a function is called, it is pushed onto the stack, and when it returns, it is popped off. If a function calls another function, the new function is placed on top of the stack, and execution moves to it. Errors, especially in deeply nested calls or infinite recursions, generate a stack trace, which is a snapshot of the function calls leading up to the error. 
 
 In the `ApiError` class, `this.stack` helps in debugging by showing where the error originated. If a custom stack is provided, it is used; otherwise, `Error.captureStackTrace(this, this.constructor)` generates one automatically, ensuring the error’s origin is logged for better debugging.
+
+- 
+- 
+- 
+
+## Adding healthcheck routes and testing, useful while deploying 
+
+### 1. Health Check Route (`hlthchk.routes.js`)
+```js
+import { Router } from "express";
+import { healthcheck } from "../controllers/hlthchk.ctr.js";
+
+const router = Router();
+
+// Health check route when `/` is accessed
+router.route("/").get(healthcheck);
+
+export default router;
+```
+This file sets up a route for checking server health.
+Router from Express is used to create a modular route.
+The healthcheck function from the controller is mapped to the GET / route. 
+
+### 2. Creating Health Check controller
+`hlthchk.ctr.js`
+
+```js
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+const healthcheck = asyncHandler(async (req, res) => {
+    return res.status(200).json(new ApiResponse(200, "OK", "Health Check passed")); 
+});
+
+export { healthcheck };
+```
+
+#### Explanation:
+- Handles health check logic and returns a response when called.
+- Uses asyncHandler to automatically handle errors instead of using try-catch blocks.
+- Sends a JSON response using ApiResponse, ensuring a consistent API response format.
+The response structure is:
+```json
+{
+  "statusCode": 200,
+  "message": "OK",
+  "data": "Health Check passed"
+}
+```
+Exports the healthcheck function so it can be used in the route.
+
+
+### 3. Registering the Health Check Route ( app.js)
+
+```js
+import healthcheckRouter from "./routes/hlthchk.routes.js";
+
+// Mounting the route
+app.use("/api/v1/healthcheck", healthcheckRouter);
+```
+- Imports the health check router from hlthchk.routes.js.
+- Mounts it at /api/v1/healthcheck, meaning any request to this URL will be handled by healthcheckRouter.
+- The app.use() function registers the router, making the endpoint accessible.
