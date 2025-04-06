@@ -73,5 +73,6 @@ import mongoose, { Schema } from "mongoose";
     { timestamps: true } // Automatically handles createdAt & updatedAt
   );
   
+  
   export const User = mongoose.model("User", userSchema);
   

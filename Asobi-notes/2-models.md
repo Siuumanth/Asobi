@@ -207,3 +207,30 @@ added that to `videos` and `comments` models
 - Ideal for implementing infinite scrolling or "Load More" buttons.
 
 Now, when you query videos or comments using aggregation, you can use .`aggregatePaginate()` to get paginated results efficiently. 🚀
+
+
+# Middlewares for models:
+In Mongoose, model middlewares (or hooks) allow you to run functions before or after certain operations (like save, remove, updateOne).
+
+🔹 Types of Model Middleware:
+
+1️⃣ Pre Middleware (pre) → Runs before an action (e.g., hashing a password before saving).
+
+2️⃣ Post Middleware (post) → Runs after an action (e.g., logging after deleting a user).
+
+🔹 Example:
+```js
+userSchema.pre("save", function (next) {
+  this.username = this.username.toLowerCase(); // Ensure lowercase usernames
+  next();
+});
+
+userSchema.post("remove", function (doc) {
+  console.log(`User ${doc.username} was deleted`);
+});
+```
+ ### Common Uses:
+- Hashing passwords before saving.
+- Automatically updating timestamps.
+- Logging actions.
+- Preventing deletion of important data.
