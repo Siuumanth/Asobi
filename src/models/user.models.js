@@ -14,7 +14,12 @@ users [icon: user] {
   }
   */
 
+
+import bcrypt from "bcrypt"
 import mongoose, { Schema } from "mongoose";
+import jsonwebtoken from "jsonwebtoken";
+require("dotenv").config();
+
 
 // defining the whole model
   const userSchema = new Schema(
@@ -73,6 +78,59 @@ import mongoose, { Schema } from "mongoose";
     { timestamps: true } // Automatically handles createdAt & updatedAt
   );
   
+
+
+// Now we will encrypt password before storing it
+
+// pre hooks, next is for passing one middleware to another
+// its like a ripple effect between middlewares
+userSchema.pre("save", async function (next) {
+
+   // This makes sure the password is only hashed if it was modified or newly set 
+  if(!this.modified("password")) return next();
+
+  this.password = bcrypt.hash(this.password, 10)
+
+  next()
+})
+
+// we have set for signup, now for login
+userSchema.methods.isPasswordMatched = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+//setting up JSON web token for access
+userSchema.methods.generateAccessToken = function () {
+  // shot lived access token
+  // this is the payload
+  return jsonwebtoken.sign({
+    _id: this._id,
+    email: this.email,
+    username: this.username,
+    fullName: this.fullName,
+  },
+  process.env.ACCESS_TOKEN_SECRET,
+  {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+  })
+};
+
+
+userSchema.methods.generateRefreshToken = function () {
+  // shot lived access token
+  // this is the payload
+  return jsonwebtoken.sign({
+    _id: this._id,
+  },
+  process.env.REFRESH_TOKEN_SECRET,
+  {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+  })
+};
+
+
+
+
   
-  export const User = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
   
