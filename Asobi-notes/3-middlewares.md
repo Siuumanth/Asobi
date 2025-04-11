@@ -226,6 +226,9 @@ userSchema.methods.generateRefreshToken = function () {
 
 So, the **Access Token** provides short-term authentication for quick access to resources, while the **Refresh Token** allows for seamless session continuation by providing a new Access Token when the old one expires. This separation minimizes security risks and reduces the need for constant re-authentication, enhancing both efficiency and protection.
 
+ **JWT** (JSON Web Token) is a standardized format for securely transmitting information between a client and a server. It's not a type of token itself but a way to structure and encode the data within **Access Tokens** and **Refresh Tokens**.
+
+
 Together, these tokens provide a secure and scalable way to manage user authentication in modern web applications.
 
 ---
