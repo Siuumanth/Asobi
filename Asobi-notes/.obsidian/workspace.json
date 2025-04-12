@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "3-middlewares.md",
+                "file": "4-cookie & files.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "3-middlewares"
+              "title": "4-cookie & files"
             }
           }
         ]
@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "b2b00ffdcea1846f",
@@ -171,6 +170,9 @@
   },
   "active": "ff2824a5f2f5472c",
   "lastOpenFiles": [
+    "3-middlewares.md",
+    "4-cookies.md",
+    "4-cookie & files.md",
     "Welcome.md",
     "Intro.md"
   ]

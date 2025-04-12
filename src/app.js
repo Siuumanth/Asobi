@@ -1,9 +1,12 @@
 import express from "express";
 import cors from "cors";
-
+import cookieParser from "cookie-parser";
 
 //this app will be base on what we build on
 const app = express()
+
+app.use(cookieParser());
+
 
 //using middlewars to make our requests more secure
 app.use(cors({
