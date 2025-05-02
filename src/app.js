@@ -23,12 +23,14 @@ app.use(express.static("public"))
 
 //import routes
 import healthcheckRouter from "./routes/hlthchk.routes.js"
-
+import userRouter from "./routes/user.routes.js"
 
 
 //routes
 //this runs when the route is accessed
 app.use("/api/v1/healthcheck",healthcheckRouter)
+app.use("/api/v1/users",userRouter) // in actual, it shows up when /register is accessed
+
 
 
 

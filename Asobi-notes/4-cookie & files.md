@@ -236,3 +236,5 @@ const uploadOnCloudinary = async(localFilePath) => {
     }
 }
 ```
+
+The above uploads to the server.
