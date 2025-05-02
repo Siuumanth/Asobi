@@ -232,3 +232,148 @@ So, the **Access Token** provides short-term authentication for quick access to 
 Together, these tokens provide a secure and scalable way to manage user authentication in modern web applications.
 
 ---
+
+// Below is optional stuff
+# Error middleware
+
+## error.middleware.js - Explanation
+
+### ✨ Purpose:
+
+This middleware handles **errors** thrown in the application by:
+- Catching any error passed through the `next(err)` function.
+- Formatting the error into a proper API response.
+- Using the custom `ApiError` class to make all error responses consistent.
+
+---
+
+### ⚡ The Code Flow:
+
+#### 1. Middleware Signature
+
+```js
+const errorHandler = (err, req, res, next) => {
+```
+
+- It's a standard **Express error-handling middleware** because it has 4 arguments.
+- Automatically catches errors passed via `next(err)`.
+#### 2. Determine the Error Type
+
+```js
+let error = err;
+if (!(error instanceof ApiError)) {
+    const statusCode = error.statusCode || error instanceof mongoose.Error ? 400 : 500;
+    // [BUG: statusCode is unused and should be assigned outside this block]
+}
+```
+
+- Checks if the error is already an `ApiError`.
+    
+- If not, assigns a status code based on:
+    
+    - `mongoose.Error` → 400
+        
+    - Any other error → 500
+        
+
+#### 3. Wrap Error in ApiError
+
+```js
+error = new ApiError(statusCode, message, error?.ApiError.errors || [], err.stack);
+```
+
+- Ensures any unexpected error is wrapped in a structured format.
+    
+
+#### 4. Construct JSON Response
+
+```js
+const response = {
+  ...error,
+  message: error.message,
+  ...(process.env.NODE_ENV === "development" ? { stack: error.stack } : {})
+};
+```
+
+- Spreads the `error` object fields.
+    
+- Includes the `stack` only in development for debugging.
+    
+
+#### 5. Send the Response
+
+```js
+return res.status(error.statusCode).json(response);
+```
+
+- Sends the structured error response to the client.
+    
+
+---
+
+## 🔧 Fix Needed in Code
+
+There is a small bug:
+
+- `statusCode` is declared inside the `if` block but used outside.
+    
+- It should be declared in the outer scope before being used in `new ApiError()`.
+    
+
+---
+
+## 🔒 What is `ApiError`?
+
+It's a custom error class to give a consistent structure to your API errors.
+
+```js
+class ApiError extends Error {
+  constructor(statusCode, message = "Something went wrong", errors = [], stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+    this.errors = errors;
+    this.message = message;
+    this.success = false;
+    this.data = null;
+
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+}
+```
+
+- Helps your frontend team know what to expect.
+    
+- Useful for centralized error handling and logging.
+    
+
+---
+
+## 🌍 Real Example in Asobi
+
+When a user tries to register with an existing email:
+
+- `throw new ApiError(409, "Username or email already exists")`
+    
+- This is caught in the middleware and returned as:
+    
+
+```json
+{
+  "statusCode": 409,
+  "message": "Username or email already exists",
+  "success": false,
+  "data": null
+}
+```
+
+---
+
+Use this middleware at the **end** of your route declarations:
+
+```js
+app.use(errorHandler);
+```

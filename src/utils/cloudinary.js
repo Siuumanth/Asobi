@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
-require('dotenv').config();
+import dotenv from "dotenv";
+dotenv.config();
 import fs from 'fs';
 
 
@@ -32,7 +33,25 @@ const uploadOnCloudinary = async(localFilePath) => {
 
     } catch (error) {
         // if some error happens we will abort uploading and delete file using unlink func
+        console.log(`error in cloudinary ${error}`);
         fs.unlinkSync(localFilePath);
         throw error;
     }
+}
+
+
+//Method for deleting image incase of an error 
+const deleteFromCloudinary = async (publicId) => {
+    try{
+        const result = await cloudinary.uploader.destroy(publicId)
+        console.log("Deleted from cloudinary, publicID:", publicId)
+    } catch(error){
+        console.log("Error deleting from cloudinary",error)
+        return null;
+    }
+}
+
+
+export {
+    uploadOnCloudinary,deleteFromCloudinary
 }

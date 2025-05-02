@@ -18,7 +18,9 @@ users [icon: user] {
 import bcrypt from "bcrypt"
 import mongoose, { Schema } from "mongoose";
 import jsonwebtoken from "jsonwebtoken";
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
+
 
 
 // defining the whole model
@@ -64,7 +66,7 @@ require("dotenv").config();
       },
       refreshToken: {
         type: String,
-        required: true,
+        default: "",
       },
       createdAt: {
         type: Date,
@@ -87,7 +89,7 @@ require("dotenv").config();
 userSchema.pre("save", async function (next) {
 
    // This makes sure the password is only hashed if it was modified or newly set 
-  if(!this.modified("password")) return next();
+  if(!this.isModified("password")) return next();
 
   this.password = bcrypt.hash(this.password, 10)
 
@@ -101,7 +103,7 @@ userSchema.methods.isPasswordMatched = async function (enteredPassword) {
 
 //setting up JSON web token for access
 userSchema.methods.generateAccessToken = function () {
-  // shot lived access token
+  // short lived access token
   // this is the payload
   return jsonwebtoken.sign({
     _id: this._id,
@@ -127,8 +129,6 @@ userSchema.methods.generateRefreshToken = function () {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY
   })
 };
-
-
 
 
   

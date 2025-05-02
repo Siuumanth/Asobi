@@ -1,10 +1,10 @@
 import multer from "multer"
-
+import path from "path";
 // Step 1: Define custom storage engine
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Specifies the folder where uploaded files will be stored
-    cb(null, '/public/temp');
+    cb(null, path.join(process.cwd(), "public", "temp"));
   },
   filename: function (req, file, cb) {
     // Generates a unique filename using field name and timestamp

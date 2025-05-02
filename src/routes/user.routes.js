@@ -7,13 +7,13 @@ const router = Router();
 
 //means when a POST request is made to /register, run the registerUser function.
 router.route("/register").post(
-    upload.fields([
+    upload.fields([    // Here we are linkng the upload middleware to the route
         {
             name: "avatar",
             maxCount: 1
         },
         {
-            name: "coverimage",
+            name: "coverImage",
             maxCount: 1
         }
     ]),
