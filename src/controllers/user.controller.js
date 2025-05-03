@@ -4,13 +4,96 @@ import {User} from "../models/user.models.js"
 import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 
-// Actual business logic for uplaoding 
 
+// Method to generate access token, after the user logs in
+const generateAccessandRefreshToken = async (userId) => {
+    try {
+        const user = await User.findById(userid)
+        // check for user existance
+        if(!user){
+            console.log("Couldnt find user")
+            throw new ApiError(400, "User not found");
+        }
+    
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+    
+        await user.save({validateBeforeSave:false})
+    
+        return {accessToken, refreshToken};
+    
+        // before returning, we will be storing refreshtoken in the object
+    } catch (error) {
+        throw new ApiError(400, "Somethong went wrong when generating access tokens ");
+    }
+
+}
+
+
+const loginUser = asyncHandler( async (req,res) => {
+    // get data from body
+    const {username, password} = req.body;
+
+    //validation
+    if(!email){
+        throw new ApiError(400, "email is required")
+    }
+
+    const user = await User.findOne({
+        $or: [{username},{email}]
+    })
+    if(!user){
+        throw new ApiError(404, "User not found")
+    }
+
+    // verifying password
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401, "Invalid credentials")
+    }
+    
+    // saving refresh token
+    const {accessToken, refreshToken} = await generateAccessToken(user._id)
+
+    // Now we have to login the user, so for that, we will re get the user object from databsae, with the saved info
+
+
+    // login means saving user data in the browser session
+    const loggedInUser = await User.findById(user._id).select("-password -refreshtoken")
+
+    if(!loggedInUser){
+        throw new ApiError(500, "User not found")
+    }
+
+    const options = {
+        httpOnly: true,   // user camt modify
+        secure: process.env.NODE_ENV === "production",
+    }
+
+
+    // finally sending response to user
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(
+        200, 
+        {
+            user: loggedInUser, accessToken, refreshToken
+        },  // for mobiles
+        "User logged in successfully  //"
+    ))
+})
+
+
+
+// Actual business logic for uplaoding 
 const registerUser = asyncHandler( async (req,res) => { 
     console.log("starting registration\n", req.body)
     console.log("FILES", req.files);
 
-    //Registeration logic
+    //Registeration logic , form data
     const {fullName, email, username, password} = req.body;
 
 
@@ -27,12 +110,10 @@ const registerUser = asyncHandler( async (req,res) => {
     const existedUser = await User.findOne({
         $or: [{username}, {email}] // Search a user based on username or email
     })
-
-
-
     if(existedUser){
         throw new ApiError(409, "Username or email already exists");
     }
+
 
     // Handling images
     const avatarLocalPath = req.files?.avatar[0]?.path  
@@ -120,6 +201,7 @@ const registerUser = asyncHandler( async (req,res) => {
 
 
 export {
-    registerUser
+    registerUser,
+    loginUser
 }
 

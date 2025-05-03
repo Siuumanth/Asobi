@@ -119,7 +119,7 @@ userSchema.methods.generateAccessToken = function () {
 
 
 userSchema.methods.generateRefreshToken = function () {
-  // shot lived access token
+  // short lived access token
   // this is the payload
   return jsonwebtoken.sign({
     _id: this._id,
