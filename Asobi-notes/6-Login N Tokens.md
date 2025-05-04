@@ -152,3 +152,105 @@ In this block:
 - Tokens are stored in cookies, and only non-sensitive user data is sent back to the frontend.
 
 ---
+
+# JWT Verification and Cookies (Refresh Token Flow)
+
+### Refreshing the Access Token (with Comments)
+
+``` javascript
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    // Grab the refresh token from cookies or request body
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "Refresh token is required");
+    }
+
+    try {
+        // Verify refresh token using secret and extract payload
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+        // Find the corresponding user in the DB using the decoded _id
+        const user = await User.findById(decodedToken?._id);
+
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token");
+        }
+
+        // Check if the refresh token matches what's stored in DB
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Invalid refresh token");
+        }
+
+        // Cookie options for setting new tokens
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+        };
+
+        // Generate new access and refresh tokens
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessandRefreshToken(user._id);
+
+        // Send updated tokens as cookies and response JSON
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(new ApiResponse(200, {
+                accessToken,
+                refreshToken: newRefreshToken
+            }, "Access token refreshed successfully"));
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong");
+    }
+});
+```
+
+### How It Works:
+
+- When an access token expires, the frontend sends a request with the stored **refresh token** (in cookie or body).
+    
+- The backend:
+    - Verifies the refresh token.
+    - Checks if it matches the one stored in the database.
+    - If valid, it generates and returns a new access token and a new refresh token.
+        
+- The new tokens replace the old ones via cookies.
+
+This keeps the user logged in without needing to re-enter credentials.
+
+---
+
+### What does `jwt.verify()` do?
+
+- `jwt.verify(token, secret)` decodes and validates a JWT using a secret key.
+- If the token is valid and not expired, it returns the decoded payload (usually contains user ID).
+- If invalid/expired, it throws an error.
+
+### What is `REFRESH_TOKEN_SECRET`?
+
+- It's a secret string (env variable) used to sign and verify refresh tokens.
+    
+- Must be kept secure and private. Any token signed with it can be verified only with the same secret.
+    
+### How Are Cookies Sent to Server?
+
+- Browsers automatically attach cookies marked as `httpOnly` in requests to the domain that set them.
+    
+- If a user logs in and the server responds with cookies, those are saved by the browser.
+    
+- On subsequent requests (like token refresh), cookies are automatically included in headers.
+
+---
+
+### Summary
+
+- Login sends both access & refresh tokens to frontend as **httpOnly cookies**.
+- Access token is used for authenticated requests.
+- Refresh token is stored securely and used to generate new access tokens.
+- Refresh logic validates and reissues tokens to maintain secure session.
+
+This approach provides security, performance, and a seamless user experience.
+
+---
