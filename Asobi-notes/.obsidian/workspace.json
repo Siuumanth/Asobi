@@ -64,6 +64,20 @@
             }
           },
           {
+            "id": "699c82abd357ed9d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "7-Logging out.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "7-Logging out"
+            }
+          },
+          {
             "id": "6c8e437550b26f5d",
             "type": "leaf",
             "state": {
@@ -92,7 +106,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -239,10 +253,12 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "11c365ffbae84c82",
+  "active": "699c82abd357ed9d",
   "lastOpenFiles": [
-    "4-cookie & files.md",
+    "Pasted image 20250506204110.png",
     "6-Login N Tokens.md",
+    "7-Logging out.md",
+    "4-cookie & files.md",
     "3-middlewares.md",
     "2-models.md",
     "5-userRegn.md",
