@@ -268,7 +268,7 @@ const logoutUser = asyncHandler(async (req, res) => {
                 refreshToken: undefined,
             }
         },
-        {new: true}
+        {new: true} //This is a Mongoose-specific option that means: “Return the updated document instead of the old one.”
     )
         
     const options = {
@@ -283,12 +283,125 @@ const logoutUser = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, {}, "Logged out successfully"))
 })
 
+// CRUD APIs
+// Changing currrent password
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const {oldPassword, newPassword} = req.body;
+
+    // due to middleware, user details will already be there
+
+    const user = await User.findById( 
+        req.user?._id,
+    );
+
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+    //wrong password
+    if(!isPasswordValid){
+        throw new ApiError(401, "Invalid credentials")
+    }
+    
+    user.password = newPassword;   // encryption is automatic 
+    await user.save({validateBeforeSave: false}) // this will encrypt password again
+
+    return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
+})
+
+// Getting current user
+const getCurrentUser = asyncHandler(async (req, res) => {
+    // details is already present in the middleware , we will just return it
+    return res.status(200).json(new ApiResponse(200, req.user, "Current user details"))
+})
+
+// update name and email
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const {fullName, email} = req.body;
+    
+    if(!fullName || !email){
+        throw new ApiError(400, "Full name and email are required")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                fullName,
+                email
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
+})
+
+//update Avatar
+const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.files?.path;
+
+    if(!avatarLocalPath){
+        throw new ApiError(400, "Avatar is required")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    
+    //checking cloudinary URL
+    if(!avatar.url){
+        throw new ApiError(500, "Something went wrong while uploading avatar")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, avatar, "Avatar updated successfully")) 
+})
+
+//update Cover Image
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.files?.path;
+
+    if(!coverImageLocalPath){
+        throw new ApiError(400, "Cover image is required")
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    
+    //checking cloudinary URL
+    if(!coverImage.url){
+        throw new ApiError(500, "Something went wrong while uploading cover image")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, coverImage, "Cover image updated successfully")) 
+})
+
 
 
 export {
     registerUser,
     loginUser,
     refreshAccessToken,
-    logoutUser
+    logoutUser,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateAvatar,
+    updateCoverImage
 }
 
