@@ -393,6 +393,153 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
 
 
+// Aggregation functions
+// mainly used for getting larged amount of specific data at once
+
+const getUserChannelProfile = asyncHandler( async (req, res) => {
+
+    // query parameter will be username
+    const {username} = req.params
+
+    if(!username?.trim()){
+        throw new ApiError(400, "Username is required")
+    }
+    
+    // aggregation pipeline to get subscriber list of the channel
+    const channel = await User.aggregate(
+        [
+            {
+                $match :{
+                    username: username?.toLowerCase()  // 1
+                }
+            },
+            {
+                // getting subcribers list
+                $lookup:{                              // 2
+                    from: "subscriptions",
+                    localField: "_id",   // field in current table
+                    foreignField: "channel",   // field in subscriptions table
+                    as: "subscribers"          
+                }
+            },
+            {
+                // Getting list of channels subscribed to
+                $lookup: {                               // 3
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "subscriber",
+                    as: "subscribedTo"     // gets all channels i have subbed to
+                }
+            },
+            {
+                $addFields: {                       // 4
+                    subscribersCount: { $size: "$subscribers" },   // referring to previous pipe
+                    ChannelsSubscribedToCount: { $size: "$subscribedTo" },
+
+                    // to check if user sending request is subscribed or not
+                    isSubscribed :{
+                        $cond: {
+                            if: {  
+                                $in : [req.user?._id, "$subscribers.subscriber"] ,
+                                // if req user ID is present in subscribers list???
+                            }
+                        }
+                    }
+                }
+            },
+            {
+               // Project only the necessary data
+                $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                    subscribersCount: 1,
+                    ChannelsSubscribedToCount: 1,
+                    isSubscribed: 1,
+                    coverImage: 1,
+                    email: 1
+                } 
+            }
+        ]
+    )
+
+    // no channel found
+    if(!channel?.length){
+        throw new ApiError(404, "Channel not found")
+    }
+
+    return res.status(200).json(new ApiResponse(
+        200, 
+        channel[0], 
+        "Channel profile fetched successfully"
+    ))
+})
+
+
+// Lookup joins document with the from collection
+
+const getWatchHistory = asyncHandler( async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user?._id)  // Syntax for getting object ID from string
+            },
+        },
+        {
+            // getting videos from watch history IDs
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",  // list of IDs
+                foreignField: "_id",
+                as: "watchHistory",
+
+                // Pipe line inside pipeline, to filter out our documents more
+                // Finding video details along with video
+
+                // We are passing the data from previous pipeline, which is from videos collection to this pipeline, to get video details
+                pipeline: [
+                    {
+                        // getting owner details 
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {  // project means to keep only these fields
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1,
+                                        coverImage: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"  // gives first element
+                            }
+                            // Whenever we lookup,  Mongo always returns an array of documents, we are just picking the first one
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res.status(200).json(new ApiResponse(
+        200, 
+        user[0], 
+        "Watch history fetched successfully"
+    ))
+})
+
+
+
+
 export {
     registerUser,
     loginUser,
@@ -402,6 +549,8 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateAvatar,
-    updateCoverImage
+    updateCoverImage,
+    getChannelProfile,
+    getWatchHistory
 }
 

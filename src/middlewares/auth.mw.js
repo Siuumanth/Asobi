@@ -10,6 +10,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 
 // Middleware to verify JWT token and attach user to request
+// This function attaches user info to the request object
 export const verifyJWT = asyncHandler(async (req, _, next) => {
     // 1. Extract token from cookie or Authorization header
     const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ", "");
