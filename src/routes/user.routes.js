@@ -1,14 +1,32 @@
 import {Router} from "express";
-import {registerUser, logoutUser} from '../controllers/user.controller.js';
+import {
+    registerUser,
+    logoutUser,
+    loginUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getChannelProfile,
+    updateAccountDetails,
+    updateAvatar,
+    updateCoverImage,
+    getWatchHistory
+    } from '../controllers/user.controller.js';
 
 import {upload} from '../middlewares/multer.mw.js';
 import { verifyJWT } from "../middlewares/auth.mw.js";
  
 const router = Router();
 
-//means when a POST request is made to /register, run the registerUser function.
+
+
+// Now , whatever controllers we made, we have to define routes for it
+
+
+
+// UNSECURED ROUTES, no need verification, anyone can access.
 router.route("/register").post(
-    upload.fields([    // Here we are injecting the upload middleware to the /register route
+//means when a POST request is made to /register, run the registerUser function.
+    upload.fields([   
         {
             name: "avatar",
             maxCount: 1
@@ -17,17 +35,39 @@ router.route("/register").post(
             name: "coverImage",
             maxCount: 1
         }
-    ]),
+    ]), // Here we are injecting the upload middleware to the /register route
     registerUser
 ); 
 
+router.route("/login").post(loginUser);
+router.route("/refresh-token").post(refreshAccessToken);
 
-//secured route
+
+
+
+
+// SECURED ROUTES
+// We add verifyJWT middleware to all 
+
 // adding middleware and logoutUser is the next() function
-
 router.route("/logout").post(verifyJWT, logoutUser);
-
-//router.route("/logout").post(verifyJWT,/*Any function can be added here*/ logoutUser);
 // this is how u inject middlewares
+
+router.route("/change-password").post(verifyJWT, changeCurrentPassword);
+
+router.route("/current-user").get(verifyJWT, getCurrentuser)
+
+router.route("/c:/username").get(verifyJWT, getChannelProfile)  // query parameter
+router.route("/update-account").patch(verifyJWT, updateAccountDetails)
+
+router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateAvatar) // as we are expecting a single file, we use single()
+
+router.route("/cover-image").patch(verifyJWT, upload.single("cover-image"), updateCoverImage) // as we are expecting a single file, we use single()
+
+router.route("/history").get(verifyJWT, getWatchHistory)
+
+
+
+
 
 export default router
