@@ -5,8 +5,9 @@ import {
     loginUser,
     refreshAccessToken,
     changeCurrentPassword,
-    getChannelProfile,
+    getUserChannelProfile,
     updateAccountDetails,
+    getCurrentUser,
     updateAvatar,
     updateCoverImage,
     getWatchHistory
@@ -55,9 +56,9 @@ router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 
-router.route("/current-user").get(verifyJWT, getCurrentuser)
+router.route("/current-user").get(verifyJWT, getCurrentUser)
 
-router.route("/c:/username").get(verifyJWT, getChannelProfile)  // query parameter
+router.route("/c:/username").get(verifyJWT, getUserChannelProfile)  // query parameter
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)
 
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateAvatar) // as we are expecting a single file, we use single()
