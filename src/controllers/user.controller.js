@@ -102,7 +102,6 @@ const registerUser = asyncHandler( async (req,res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-
     
     const existedUser = await User.findOne({
         $or: [{username}, {email}] // Search a user based on username or email
@@ -111,27 +110,16 @@ const registerUser = asyncHandler( async (req,res) => {
         throw new ApiError(409, "Username or email already exists");
     }
 
-
     // Handling images
     const avatarLocalPath = req.files?.avatar[0]?.path  
     // getting path from the route
     const coverLocalPath = req.files?.coverImage[0]?.path
-    
 
 
     if (!avatarLocalPath){
         throw new ApiError( 400, "Avatar file is missing")
     }
 
-
-
-    // uploading on cloudinary
-    // const avatar = await uploadOnCloudinary(avatarLocalPath);
-    // let coverImage = "";
-    // if(coverLocalPath){
-    //      coverImage = await uploadOnCloudinary(coverLocalPath)
-    // }
-  
     console.log("starting uploading")
     let avatar;
     try{

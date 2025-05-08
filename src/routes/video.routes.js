@@ -11,7 +11,7 @@ const router = Router();
 
 
 // UNSECURED ROUTES, no need verification, anyone can access.
-router.route("/publish-video").post(verifyJWT,
+router.route("/publish-video").post(
     upload.fields([   
         {
             name: "video",
