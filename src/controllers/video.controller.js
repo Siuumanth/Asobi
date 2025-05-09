@@ -83,7 +83,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }
 
     console.log(videos);
-    return res.status(200).json(new ApiResponse(true, "Videos fetched successfully", videos))
+    return res.status(200).json(new ApiResponse(
+        true,
+        "Videos fetched successfully",
+        videos
+    ))
 })
 
 
