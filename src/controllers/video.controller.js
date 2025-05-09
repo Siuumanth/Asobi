@@ -7,10 +7,85 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 
 
-const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+const getChannelVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query   // getting query parameters
     //TODO: get all videos based on query, sort, pagination
+
+    // page is page number
+    // limit is number of videos per page
+    // sortBy refers to views, likes , date , etc.
+    // sortType is asc or desc
+
+    if(!userId){
+        throw new ApiError(400, "User not specified")
+    }
+
+    // We will use pagination to fetch the videos
+
+    const videos = await Video.aggregate([
+        {
+            $match: {
+                uploadedBy: new mongoose.Types.ObjectId(userId),
+            },
+        },
+        {
+            $sort: { createdAt: -1 } 
+            //createdAt: -1 — Sorts the documents by the createdAt field in descending order (newest first).
+        },
+        {
+            $skip: (page - 1) * limit // for page n, skip the last (n-1) * limit documents
+        },
+        {
+            $limit: limit 
+        }
+    ])
+
+    if(!videos){
+        throw new ApiError(404, "Videos not found")
+    }
+
+    console.log(videos);
+    return res.status(200).json(new ApiResponse(true, "Videos fetched successfully", videos))
 })
+
+
+
+const getAllVideos = asyncHandler(async (req, res) => {
+
+    // Here, we will just get all the newest first videos for home page
+    const { page = 1, limit = 10 } = req.query   
+
+    // We will use pagination to fetch the videos
+    
+    const videos = await Video.aggregate([
+        {
+            $sort: { createdAt: -1 } 
+        },
+        {
+            $skip: (page - 1) * limit // for page n, skip the last (n-1) * limit documents
+        },
+        {
+            $limit: limit 
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner"
+            }
+        }
+    ])
+
+
+    if (!videos || videos.length === 0) {
+        throw new ApiError(404, "Videos not found");
+    }
+
+    console.log(videos);
+    return res.status(200).json(new ApiResponse(true, "Videos fetched successfully", videos))
+})
+
 
 
 
