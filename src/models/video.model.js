@@ -1,62 +1,49 @@
 /*
 
-videos [icon: video] {
+comments [icon: comment] {
   id string pk
+  targetType string // 'video' | 'tweet'
+  targetId objectId
   owner objectId users
-  file string
-  thumbnail string
-  title string
-  description string
-  duration number
-  views number
-  isPublished boolean
+  content string
   createdAt Date
   updatedAt Date
 }
-
 */
+
 
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-
-const videoSchema = new Schema({
-  videoFile: {
-    type: String,  //cloudinary url
+const commentSchema = new Schema({
+  targetType: {
+    type: String,           // 'video' or 'tweet'
+    enum: ['video', 'tweet'],
     required: true,
   },
-  thumbnail: {
-    type: String,  //cloudinary url
+  targetId: {
+    type: Schema.Types.ObjectId, // ID of the video or tweet
     required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  duration: {
-    type: Number,
-    required: true,
-  },
-  views: {
-    type: Number,
-    default: 0,
-  },
-  isPublished: {
-    type: Boolean,
-    default: false,
   },
   owner: {
-    type : Schema.Types.ObjectId,
-    ref: "User",
+    type: Schema.Types.ObjectId,
+    ref: "User",            // user id
+    required: true,         // user id is required
   },
-},
-{timestamps: true}
-)
-  
-videoSchema.plugin(mongooseAggregatePaginate);
+  content: {
+    type: String,           // comment content
+    required: true,         // comment content is required    
+  },
+  createdAt: {
+    type: Date, 
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-export const Video = mongoose.model("Video", videoSchema);
+commentSchema.plugin(mongooseAggregatePaginate);
+
+export const Comment = mongoose.model("Comment", commentSchema);
