@@ -74,8 +74,10 @@ const getVideoById = asyncHandler(async (req, res) => {
 const getAllVideos = asyncHandler(async (req, res) => {
 
     // Here, we will just get all the newest first videos for home page
-    const { page = 1, limit = 10 } = req.query   
+    const { pageTemp = 1, limitTemp = 10 } = req.query  
 
+    const page = Number(pageTemp);
+    const limit = Number(limitTemp);
     // We will use pagination to fetch the videos
     
     const videos = await Video.aggregate([
@@ -116,7 +118,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, duration} = req.body;
-
+    
+    console.log("Publish video received", req.body)
     if(!title || !description){
         throw new ApiError(400, "Title, description are required");
     }

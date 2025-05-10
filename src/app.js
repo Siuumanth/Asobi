@@ -53,7 +53,7 @@ app.use(express.static(PUBLIC_DIR));
 
 // Static HTML routes
 app.get("/home", (req, res) => {
-  res.sendFile("index.html", { root: PUBLIC_DIR });
+  res.sendFile("home.html", { root: PUBLIC_DIR });
 });
 
 app.get("/watch", (req, res) => {
@@ -64,7 +64,7 @@ app.get("/channel", (req, res) => {
   res.sendFile("channel.html", { root: PUBLIC_DIR });
 });
 
-app.get("/upload", (req, res) => {
+app.get("/home/upload", (req, res) => {
   res.sendFile("upload.html", { root: PUBLIC_DIR });
 });
 

@@ -34,7 +34,8 @@ const registerUser = async () => {
     try {
         const response = await fetch(`${BASE_URL}/register`, {
             method: "POST",
-            body: formData
+            body: formData,
+            credentials: "include"  // Important for cookie-based auth
         });
 
         const data = await response.json();

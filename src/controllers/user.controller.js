@@ -164,11 +164,32 @@ const registerUser = asyncHandler( async (req,res) => {
             throw new ApiError(500, "Something went wrong while registering a user")
         }
     
+        // finally, sending tokens back as cookies
+    // 1. Generate JWTs
+    const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id);
     
-        //returning final result
-        return res
-          .status(201)
-          .json( new ApiResponse(200, createdUser, " User registered successgfully"))
+    // 2. Define secure cookie options
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    };
+    
+    // 3. Return cookies and user data
+    return res
+      .status(201)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new ApiResponse(
+          201,
+          {
+            user: createdUser,
+            accessToken,
+            refreshToken,
+          },
+          "User registered successfully"
+        )
+      );
     } catch (error) {
         console.log(" User creation failed")
         // Deleting in case smtg fails

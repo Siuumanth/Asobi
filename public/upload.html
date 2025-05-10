@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-[#0f0f0f] text-white">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Video | ASOBI</title>
+   <link href="/style.css" rel="stylesheet" />
+</head>
+
+<body class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-52 bg-[#1f1f1f] p-4 space-y-4">
+    <a href="/home" class="block hover:text-red-500">Home</a>
+    <a href="/videos" class="block hover:text-red-500">Videos</a>
+    <a href="/tweets" class="block hover:text-red-500">View Tweets</a>
+    <a href="/subscriptions" class="block hover:text-red-500">Subscriptions</a>
+    <a href="/liked" class="block hover:text-red-500">Liked Videos</a>
+    <a href="/playlists" class="block hover:text-red-500">Playlists</a>
+    <a href="/upload" class="block text-red-500 font-semibold">Upload</a>
+  </aside>
+
+  <!-- Main Section -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="flex items-center gap-4 bg-[#1c1c1c] px-6 py-3 border-b border-[#333]">
+      <a href="/home">
+        <img src="/asobi-logo.png" alt="ASOBI " class="h-8 w-auto" />
+      </a>
+      <input
+        type="text"
+        placeholder="Search videos..."
+        class="bg-[#2a2a2a] text-sm text-white px-4 py-2 rounded-full w-full max-w-md focus:outline-none"
+      />
+    </nav>
+
+    <!-- Upload Form -->
+    <section class="p-8 max-w-2xl mx-auto w-full">
+      <h2 class="text-2xl font-semibold mb-6">Upload a New Video</h2>
+      <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
+        <input
+          type="text"
+          id="title"
+          name="title"
+          placeholder="Video Title"
+          required
+          class="w-full bg-[#2a2a2a] border border-[#444] p-3 rounded-md"
+        />
+
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Video Description"
+          rows="4"
+          required
+          class="w-full bg-[#2a2a2a] border border-[#444] p-3 rounded-md"
+        ></textarea>
+
+
+        <div>
+          <label for="thumbnail" class="block mb-1">Thumbnail Image</label>
+          <input
+            type="file"
+            id="thumbnail"
+            name="thumbnail"
+            accept="image/*"
+            required
+            class="block w-full text-sm text-gray-300 file:bg-[#ff4040] file:text-white file:px-4 file:py-2 file:rounded-md"
+          />
+        </div>
+
+        <div>
+          <label for="video" class="block mb-1">Video File</label>
+          <input
+            type="file"
+            id="video"
+            name="video"
+            accept="video/*"
+            required
+            class="block w-full text-sm text-gray-300 file:bg-[#ff4040] file:text-white file:px-4 file:py-2 file:rounded-md"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="bg-[#ff4040] hover:bg-[#e53232] text-white font-bold py-2 px-6 rounded-md transition"
+        >
+          Publish Video
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/upload.js"></script>
+</body>
+</html>
