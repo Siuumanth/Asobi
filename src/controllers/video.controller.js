@@ -7,6 +7,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 
 
+// unsecure
 const getChannelVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query   // getting query parameters
     //TODO: get all videos based on query, sort, pagination
@@ -48,8 +49,28 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(true, "Videos fetched successfully", videos))
 })
 
+// unsecure
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
 
+    if(!isValidObjectId(videoId)){
+        throw new ApiError(400, "Invalid video id");
+    }
 
+    const videoDoc = await Video.findById(videoId).select("-updatedAt");
+
+    if(!videoDoc){
+        throw new ApiError(404, "Video not found");
+    }
+    
+    return res.status(200).json(new ApiResponse(
+        200,
+        videoDoc,
+        "Video fetched successfully"
+    ))
+})
+
+// unsecure
 const getAllVideos = asyncHandler(async (req, res) => {
 
     // Here, we will just get all the newest first videos for home page
@@ -169,27 +190,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
 })
 
 
-const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-
-    if(!isValidObjectId(videoId)){
-        throw new ApiError(400, "Invalid video id");
-    }
-
-    const videoDoc = await Video.findById(videoId).select("-updatedAt");
-
-    if(!videoDoc){
-        throw new ApiError(404, "Video not found");
-    }
-    
-    return res.status(200).json(new ApiResponse(
-        200,
-        videoDoc,
-        "Video fetched successfully"
-    ))
-})
-
-
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
@@ -224,21 +224,32 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 
 const deleteVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: delete video
-    const video = await Video.findByIdAndDelete(videoId);
-    
-    if(!video){
+    const { videoId } = req.params;
+    const userId = req.user?._id; // assumes auth middleware sets req.user
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video ID");
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
         throw new ApiError(404, "Video not found");
     }
-    
+
+    // authorization check: only the owner can delete
+    if (video.owner.toString() !== userId.toString()) {
+        throw new ApiError(403, "You are not authorized to delete this video");
+    }
+
+    await video.deleteOne();
+
     return res.status(200).json(new ApiResponse(
         200,
-        video,
+        null,
         "Video deleted successfully"
-    ))
-
-})
+    ));
+});
 
 
 const togglePublishStatus = asyncHandler(async (req, res) => {

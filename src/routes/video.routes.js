@@ -1,31 +1,48 @@
 import {Router} from "express";
 import {
+    getAllVideos,
     publishAVideo,
-    getAllVideos
-    } from '../controllers/video.controller.js';
+    getVideoById,
+    updateVideo,
+    deleteVideo,
+    togglePublishStatus
+} from '../controllers/video.controller.js';
 
 import {upload} from '../middlewares/multer.mw.js';
 import { verifyJWT } from "../middlewares/auth.mw.js";
  
 const router = Router();
 
+// UNSECURED routes
+router.route("/").get(getAllVideos)
+route.route("watch/:videoId").get(getVideoById)
 
-// UNSECURED ROUTES, no need verification, anyone can access.
-router.route("/publish-video").post(
-    upload.fields([   
-        {
-            name: "video",
-            maxCount: 1
-        },
-        {
-            name: "thumbnail",
-            maxCount: 1
-        }
-    ]), // Here we are injecting the upload middleware to the /register route
-    publishAVideo
-); 
+// SECURED routes
 
+// publish video
+router.route("/publish").post(
+    verifyJWT,
+        upload.fields([
+            {
+                name: "videoFile",
+                maxCount: 1,
+            },
+            {
+                name: "thumbnail",
+                maxCount: 1,
+            },
+        ]),
+        publishAVideo
+    );
 
+// update video details
+router.route("/").patch(verifyJWT, updateVideo)
+
+// delete video
+router.route("/").delete(verifyJWT, deleteVideo)
+
+// Toggle publish status
+router.route("/publish/:id").patch(verifyJWT, togglePublishStatus)
 
 
 
