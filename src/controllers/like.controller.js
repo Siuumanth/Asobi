@@ -137,7 +137,6 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 
     // we use replaceRoot to replace the root documentID(which is likes ID) with the Video Object ID
 
-
     if(!videos || videos.length === 0){
         throw new ApiError(404, "Videos not found")
     }
