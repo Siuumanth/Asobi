@@ -5,6 +5,37 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
+
+// Unsecured
+const getUserTweets = asyncHandler(async (req, res) => {
+    // TODO: get user tweets
+    const username = req.params.username;
+    if(!username){
+        throw new ApiError(400, "Username is required")
+    }
+
+    const user = await User.findOne({username});
+    if(!user){
+        throw new ApiError(404, "User not found")
+    }
+
+    const tweets = await Tweet.find({
+        owner: user._id
+    })
+
+    if(!tweets || tweets.length === 0){
+        throw new ApiError(404, "Tweets not found")
+    }
+
+    return res.status(200).json(new ApiResponse(
+        200,
+        tweets,
+        "Tweets fetched successfully",
+        "success"
+    ))
+})
+
+// secured
 const createTweet = asyncHandler(async (req, res) => {
     //TODO: create tweet
 
@@ -38,36 +69,6 @@ const createTweet = asyncHandler(async (req, res) => {
         "success"
     ))
 })
-
-
-const getUserTweets = asyncHandler(async (req, res) => {
-    // TODO: get user tweets
-    const username = req.params.username;
-    if(!username){
-        throw new ApiError(400, "Username is required")
-    }
-
-    const user = await User.findOne({username});
-    if(!user){
-        throw new ApiError(404, "User not found")
-    }
-
-    const tweets = await Tweet.find({
-        owner: user._id
-    })
-
-    if(!tweets || tweets.length === 0){
-        throw new ApiError(404, "Tweets not found")
-    }
-
-    return res.status(200).json(new ApiResponse(
-        200,
-        tweets,
-        "Tweets fetched successfully",
-        "success"
-    ))
-})
-
 
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
