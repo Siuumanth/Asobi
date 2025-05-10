@@ -1,33 +1,25 @@
 /*
-
 likes [icon: thumbs-up] {
   id string pk
-  video objectId videos
-  comment objectId comments
-  tweet objectId tweets
-  likedBy objectId users
+  targetType string // 'video', 'comment', 'tweet'
+  targetId objectId
+  likedBy objectId user
   createdAt Date
   updatedAt Date
 }
-
 */
 
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const likeSchema = new Schema({
-  video: {
-    type: Schema.Types.ObjectId,
-    ref: "Video",
+  targetType: {
+    type: String,
+    enum: ['video', 'comment', 'tweet'],
     required: true,
   },
-  comment: {
+  targetId: {
     type: Schema.Types.ObjectId,
-    ref: "Comment",
-    required: true,
-  },
-  tweet: {
-    type: Schema.Types.ObjectId,
-    ref: "Tweet",
     required: true,
   },
   likedBy: {
@@ -44,6 +36,8 @@ const likeSchema = new Schema({
     default: Date.now,
   },
 });
-  
+
+// adding aggregation pipeline
+likeSchema.plugin(mongooseAggregatePaginate);
 
 export const Like = mongoose.model("Like", likeSchema);
