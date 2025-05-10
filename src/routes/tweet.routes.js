@@ -3,9 +3,8 @@ import {
     createTweet,
     deleteTweet,
     getUserTweets,
-    updateTweet,
 } from "../controllers/tweet.controller.js"
-import {verifyJWT} from "../middlewares/auth.middleware.js"
+import {verifyJWT} from "../middlewares/auth.mw.js"
 
 const router = Router();
 

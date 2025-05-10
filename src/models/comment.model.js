@@ -2,7 +2,8 @@
 
 comments [icon: comment] {
   id string pk
-  video objectId videos
+  targetType string // 'video' | 'tweet'
+  targetId objectId
   owner objectId users
   content string
   createdAt Date
@@ -15,19 +16,23 @@ import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const commentSchema = new Schema({
-  video: {
-    type: Schema.Types.ObjectId,    //video id
-    ref: "Video",
-    required: true, //video id is required
-  },        
+  targetType: {
+    type: String,           // 'video' or 'tweet'
+    enum: ['video', 'tweet'],
+    required: true,
+  },
+  targetId: {
+    type: Schema.Types.ObjectId, // ID of the video or tweet
+    required: true,
+  },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: "User",    //user id
-    required: true, //user id is required
+    ref: "User",            // user id
+    required: true,         // user id is required
   },
   content: {
-    type: String,   //comment content
-    required: true, //comment content is required    
+    type: String,           // comment content
+    required: true,         // comment content is required    
   },
   createdAt: {
     type: Date, 
@@ -42,4 +47,3 @@ const commentSchema = new Schema({
 commentSchema.plugin(mongooseAggregatePaginate);
 
 export const Comment = mongoose.model("Comment", commentSchema);
-  

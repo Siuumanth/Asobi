@@ -15,7 +15,7 @@ const router = Router();
 
 // UNSECURED routes
 router.route("/").get(getAllVideos)
-route.route("watch/:videoId").get(getVideoById)
+router.route("watch/:videoId").get(getVideoById)
 
 // SECURED routes
 

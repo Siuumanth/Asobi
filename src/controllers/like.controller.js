@@ -1,5 +1,5 @@
 import mongoose, {isValidObjectId} from "mongoose"
-import {Like} from "../models/like.model.js"
+import {Like} from "../models/likes.model.js"
 import {Tweet} from "../models/tweet.model.js"
 import {Video} from "../models/video.model.js"
 import {Comment} from "../models/comment.model.js"

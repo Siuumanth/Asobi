@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup - ASOBI</title>
+  <link href="./style.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gray-900 text-white h-screen flex items-center justify-center">
+  <div class="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
+
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="./asobi-logo.png" alt="ASOBI Logo" class="h-12 w-auto" />
+    </div>
+
+    <h2 class="text-2xl font-semibold text-center text-gray-100 mb-6">
+      Create an Account
+    </h2>
+
+    <form id = "signup-form" method="POST" enctype="multipart/form-data">
+  <!-- Row: Username + Full Name -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+      <input type="text" id="username" name="username" required
+        class="mt-2 p-3 w-full bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white" />
+    </div>
+
+    <div>
+      <label for="name" class="block text-sm font-medium text-gray-300">Full Name</label>
+      <input type="text" id="name" name="name" required
+        class="mt-2 p-3 w-full bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white" />
+    </div>
+  </div>
+
+  <!-- Email -->
+  <div class="mb-4">
+    <label for="email" class="block text-sm font-medium text-gray-300">Email Address</label>
+    <input type="email" id="email" name="email" required
+      class="mt-2 p-3 w-full bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white" />
+  </div>
+
+  <!-- Password -->
+  <div class="mb-4 relative">
+    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+    <input type="password" id="password" name="password" required
+      class="mt-2 p-3 w-full bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white pr-10" />
+    <button type="button" onclick="togglePassword()" class="absolute right-3 bottom-3 text-gray-400 hover:text-white">
+      👁️
+    </button>
+  </div>
+
+  <!-- Row: Avatar + Cover -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <label for="avatar" class="block text-sm font-medium text-gray-300">Avatar</label>
+      <input type="file" id="avatar" name="avatar" accept="image/*" required
+        class="mt-2 w-full text-white" />
+    </div>
+
+    <div>
+      <label for="cover" class="block text-sm font-medium text-gray-300">Cover Image</label>
+      <input type="file" id="cover" name="cover" accept="image/*"
+        class="mt-2 w-full text-white" />
+    </div>
+  </div>
+
+  <button id="register" type="button"
+    class="w-full bg-gray-600 text-white p-3 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400">
+    Sign Up
+  </button>
+</form>
+
+
+    <div class="mt-4 text-center">
+      <p class="text-sm text-gray-400">
+        Already have an account?
+        <a href="/login" class="text-white hover:underline">Login here</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="spinner" class="hidden flex justify-center my-4">
+  <div class="w-6 h-6 border-4 border-gray-300 border-t-white rounded-full animate-spin"></div>
+</div>
+
+
+  <script>
+    function togglePassword() {
+      const pwd = document.getElementById("password");
+      pwd.type = pwd.type === "password" ? "text" : "password";
+    }
+  </script>
+  <script src="./js/signup.js"></script>
+
+</body>
+
+</html>

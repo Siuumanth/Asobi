@@ -8,7 +8,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "build": "tailwindcss -i ./src/input.css -o ./public/style.css --watch"
   },
   "keywords": [
     "nodejs",
@@ -16,11 +17,12 @@
     "express",
     "backend"
   ],
-  "author": "Sumanth",
-  "license": "ISC",
-  "devDependencies": {
+    "author": "Sumanth",
+    "license": "ISC",
+    "devDependencies": {
     "nodemon": "^3.1.9",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "tailwindcss": "^3.3.3"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

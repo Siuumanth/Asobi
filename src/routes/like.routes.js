@@ -3,7 +3,7 @@ import {
     toggleLike,
     getLikedVideos
 } from "../controllers/like.controller.js"
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.mw.js";
 
 const router = Router();
 router.use(verifyJWT); // making all routes secure

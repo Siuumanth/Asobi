@@ -6,9 +6,6 @@ import { fileURLToPath } from "url";
 
 const app = express()
 
-app.use(express.static("public"))
-//this means static images is in public folder
-
 app.use(cookieParser());
 
 //using middlewars to make our requests more secure
@@ -48,30 +45,35 @@ app.use(errorHandler)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Absolute path to public folder
+const PUBLIC_DIR = path.resolve(__dirname, "../public");
+
+// Serve static files
+app.use(express.static(PUBLIC_DIR));
+
 // Static HTML routes
 app.get("/home", (req, res) => {
-  res.sendFile("index.html", { root: path.join(__dirname, "public") });
+  res.sendFile("index.html", { root: PUBLIC_DIR });
 });
 
 app.get("/watch", (req, res) => {
-  res.sendFile("watch.html", { root: path.join(__dirname, "public") });
+  res.sendFile("watch.html", { root: PUBLIC_DIR });
 });
 
 app.get("/channel", (req, res) => {
-  res.sendFile("channel.html", { root: path.join(__dirname, "public") });
+  res.sendFile("channel.html", { root: PUBLIC_DIR });
 });
 
 app.get("/upload", (req, res) => {
-  res.sendFile("upload.html", { root: path.join(__dirname, "public") });
+  res.sendFile("upload.html", { root: PUBLIC_DIR });
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile("login.html", { root: path.join(__dirname, "public") });
+  res.sendFile("login.html", { root: PUBLIC_DIR });
 });
 
 app.get("/signup", (req, res) => {
-  res.sendFile("signup.html", { root: path.join(__dirname, "public") });
+  res.sendFile("signup.html", { root: PUBLIC_DIR });
 });
-
 
 export{app}
