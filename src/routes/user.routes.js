@@ -56,7 +56,7 @@ router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 
-router.route("/current-user").get(verifyJWT, getCurrentUser)
+router.route("/profile").get(verifyJWT, getCurrentUser)
 
 router.route("/c:/username").get(verifyJWT, getUserChannelProfile)  // query parameter
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)

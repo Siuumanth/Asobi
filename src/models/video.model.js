@@ -25,7 +25,7 @@ const videoSchema = new Schema({
     ref: "User", // Reference to users collection
     required: true,
   },
-  file: {
+  video: {
     type: String,
     required: true,
   },

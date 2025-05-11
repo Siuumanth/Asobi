@@ -82,6 +82,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
     
     const videos = await Video.aggregate([
         {
+            $match: {
+                isPublished: true,
+            },
+        },
+        {
             $sort: { createdAt: -1 } 
         },
         {
@@ -97,6 +102,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 foreignField: "_id",
                 as: "owner"
             }
+        },
+        {
+            $unwind: "$owner"
         }
     ])
 
@@ -105,11 +113,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Videos not found");
     }
 
-    console.log(videos);
+    if(videos){
+        console.log("found");
+    }
     return res.status(200).json(new ApiResponse(
         true,
-        "Videos fetched successfully",
-        videos
+        videos,
+        "Videos fetched successfully heheheh"
     ))
 })
 
@@ -121,18 +131,22 @@ const publishAVideo = asyncHandler(async (req, res) => {
     
     console.log("Publish video received", req.body)
     if(!title || !description){
+        console.log("Title, description are required")
         throw new ApiError(400, "Title, description are required");
     }
 
-    const user = await User.findById(req.user._id)
+    console.log("User id", req.user?._id)
+    const user = await User.findById(req.user?._id)
     if(!user){
+        console.log("User not found");
         throw new ApiError(404, "User not found");
     }
 
-    const videoLocalPath = req.files?.video[0]?.path  
+    const videoLocalPath = req.files?.videoFile[0]?.path  
     const thumbnailLocalPath = req.files?.thumbnail[0]?.path
         
     if (!videoLocalPath || !thumbnailLocalPath){
+        console.log("Video file is missing")
         throw new ApiError( 400, "Video file is missing")
     }
 
@@ -141,7 +155,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     let video;
     try{
         video = await uploadOnCloudinary(videoLocalPath)
-        console.log("video uploaded successfully", video)
+        console.log("video uploaded successfully")
     }catch(err){
         console.log("Error uploading avatar", err);
         throw new ApiError( 400, "Failed to upload avatar");
@@ -150,12 +164,13 @@ const publishAVideo = asyncHandler(async (req, res) => {
     let thumbnail;
     try{
         thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
-        console.log("thumbnail uploaded successfully", thumbnail)
+        console.log("thumbnail uploaded successfully")
     }catch(err){
         console.log("Error uploading Cover", err);
         throw new ApiError( 400, "Failed to upload Cover");
     }
 
+    console.log("Creating video")
     const videoData = {
         title,
         description,
@@ -167,8 +182,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
         isPublished: true
     }
 
+    let videoDoc;
     try {
-        const videoDoc = await Video.create(videoData);
+         videoDoc = await Video.create(videoData);
 
         if(!videoDoc){
             throw new ApiError(500, "Failed to create video");
@@ -181,6 +197,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
     } catch (error) {
+        
+        console.log("Error creating video", error);
+        if(videoDoc){
+            await Video.findByIdAndDelete(videoDoc._id)
+        }
         if(video){
             await deleteFromCloudinary(video.public_id)
         }

@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken"
 // Method to generate access token, after the user logs in
 const generateAccessandRefreshToken = async (userId) => {
     try {
-        const user = await User.findById(userid)
+        const user = await User.findById(userId)
         // check for user existance
         if(!user){
             console.log("Couldnt find user")
@@ -90,7 +90,7 @@ const loginUser = asyncHandler( async (req,res) => {
 // Actual business logic for uplaoding 
 const registerUser = asyncHandler( async (req,res) => { 
     console.log("starting registration\n", req.body)
-    console.log("FILES", req.files);
+    console.log("FILES");
 
     //Registeration logic , form data
     const {fullName, email, username, password} = req.body;
@@ -124,7 +124,7 @@ const registerUser = asyncHandler( async (req,res) => {
     let avatar;
     try{
         avatar = await uploadOnCloudinary(avatarLocalPath)
-        console.log("Avatar uploaded successfully", avatar)
+        console.log("Avatar uploaded successfully")
     }catch(err){
         console.log("Error uploading avatar", err);
         throw new ApiError( 400, "Failed to upload avatar");
@@ -133,7 +133,7 @@ const registerUser = asyncHandler( async (req,res) => {
     let coverImage;
     try{
         coverImage = await uploadOnCloudinary(coverLocalPath)
-        console.log("Cover uploaded successfully", avatar)
+        console.log("Cover uploaded successfully")
     }catch(err){
         console.log("Error uploading Cover", err);
         throw new ApiError( 400, "Failed to upload Cover");
@@ -142,8 +142,9 @@ const registerUser = asyncHandler( async (req,res) => {
 
     console.log("Now creating new user in atlas ")
     // creating a new user
+    let user;
     try {
-        const user = await User.create({
+        user = await User.create({
             fullName,
             avatar: avatar.url,
             coverImage: coverImage?.url || "",
@@ -151,12 +152,15 @@ const registerUser = asyncHandler( async (req,res) => {
             password,
             username: username.toLowerCase()
         })
+        console.log("User saved")
     
         //verifying if the user was created or not
         // This gives us the actual user object from database
         const createdUser = await User.findById(user._id).select(
             "-password -refreshToken"
         );
+
+        console.log("User confirmed")
         // select will exclude password and refresh token for us 
     
         // if no user created
@@ -191,8 +195,15 @@ const registerUser = asyncHandler( async (req,res) => {
         )
       );
     } catch (error) {
-        console.log(" User creation failed")
+        console.log(" User creation failed and error caught")
         // Deleting in case smtg fails
+
+        // deleting user
+        const deletedUser = await User.findByIdAndDelete(user._id)
+        if(deletedUser){
+            console.log("User deleted")
+        }
+        // deleting images
         if(avatar){
             await deleteFromCloudinary(avatar.public_id)
         }
@@ -200,7 +211,7 @@ const registerUser = asyncHandler( async (req,res) => {
             await deleteFromCloudinary(coverImage.public_id)
         }
 
-        throw new ApiError(500, "Something went wrong, images removed")
+        throw new ApiError(500, "Something went wrong, images removed and user deleted" + error)
 
     }
 })

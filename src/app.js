@@ -56,6 +56,10 @@ app.get("/home", (req, res) => {
   res.sendFile("home.html", { root: PUBLIC_DIR });
 });
 
+app.get("/profile", (req, res) => {
+  res.sendFile("profile.html", { root: PUBLIC_DIR });
+});
+
 app.get("/watch", (req, res) => {
   res.sendFile("watch.html", { root: PUBLIC_DIR });
 });

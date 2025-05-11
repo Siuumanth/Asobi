@@ -44,13 +44,13 @@ uploadForm.addEventListener("submit", async function (e) {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("thumbnail", thumbnailFile);
-    formData.append("video", videoFile);
+    formData.append("videoFile", videoFile);
     formData.append("duration", durationInSeconds);
 
     // Debug: log all form data fields
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
+    //for (let [key, value] of formData.entries()) {
+    //  console.log(`${key}:`, value);
+    //}
 
     const response = await fetch(`${BASE_URL}/publish`, {
       method: "POST",
