@@ -26,35 +26,36 @@ const generateAccessandRefreshToken = async (userId) => {
     } catch (error) {
         throw new ApiError(400, "Somethong went wrong when generating access tokens ");
     }
-
 }
 
 
 const loginUser = asyncHandler( async (req,res) => {
     // get data from body
-    const {username, password} = req.body;
+    console.log(req.body)
+    const {username, password, email} = req.body;
 
+
+    console.log("User trying to log in ")
     //validation
     if(!email){
         throw new ApiError(400, "email is required")
     }
-
     const user = await User.findOne({
         $or: [{username},{email}]
     })
     if(!user){
         throw new ApiError(404, "User not found")
     }
-
+console.log("User exists")
     // verifying password
-    const isPasswordCorrect = await user.isPasswordCorrect(password)
+    const isPasswordCorrect = await user.isPasswordMatched(password)
 
-    if(!isPasswordValid){
+    if(!isPasswordCorrect){
         throw new ApiError(401, "Invalid credentials")
     }
     
     // saving refresh token
-    const {accessToken, refreshToken} = await generateAccessToken(user._id)
+    const {accessToken, refreshToken} = await generateAccessandRefreshToken(user._id)
 
     // Now we have to login the user, so for that, we will re get the user object from databsae, with the saved info
 
@@ -87,7 +88,7 @@ const loginUser = asyncHandler( async (req,res) => {
 })
 
 
-// Actual business logic for uplaoding 
+// Actual business logic for registering 
 const registerUser = asyncHandler( async (req,res) => { 
     console.log("starting registration\n", req.body)
     console.log("FILES");
@@ -150,7 +151,7 @@ const registerUser = asyncHandler( async (req,res) => {
             coverImage: coverImage?.url || "",
             email,
             password,
-            username: username.toLowerCase()
+            username: username.toLowerCase(),
         })
         console.log("User saved")
     
@@ -172,6 +173,14 @@ const registerUser = asyncHandler( async (req,res) => {
     // 1. Generate JWTs
     const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id);
     
+    // Saving new token 
+    user.refreshToken = refreshToken;
+    const updatedUser =   await user.save({ validateBeforeSave: false });
+
+    if(!updatedUser){
+        throw new ApiError(500, "Something went wrong while saving tokens")
+    }
+
     // 2. Define secure cookie options
     const options = {
       httpOnly: true,
@@ -224,6 +233,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
     if(!incomingRefreshToken){ 
         throw new ApiError(401, " Refresh token is required")
     }
+    console.log("Trying to refresh token")
 
     // IN generating token codes:
     // For refresh, we only sign the User id from our database
@@ -235,14 +245,15 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
         )
-        const user = await User.findById(decodedToken?._id)
 
+        const user = await User.findById(decodedToken?._id)
+         
         if ( !user){
-            throw new ApiError(401, "Invalid refresh token")
+            throw new ApiError(401, "USer no exists")
         }
 
         // checking if user is valid
-        if(incomingRefreshToken != user?.refreshToken){
+        if(incomingRefreshToken != user.refreshToken){
             throw new ApiError(401, "Invalid refresh token")
         }
 
@@ -268,7 +279,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
             )
 
     } catch (error) {
-        throw new ApiError(500, "Something went wrong")
+        throw new ApiError(500, "Something went wrong", error)
     }
 
 })
