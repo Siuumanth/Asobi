@@ -4,6 +4,9 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import { Subscription } from "../models/subscription.model.js";
+import { ObjectId } from 'mongodb';
+
 
 // Method to generate access token, after the user logs in
 const generateAccessandRefreshToken = async (userId) => {
@@ -429,111 +432,87 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 // Aggregation functions
 // mainly used for getting larged amount of specific data at once
 
-const getUserChannelProfile = asyncHandler( async (req, res) => {
 
-    // query parameter will be username
-    const {username} = req.query
 
-    if(!username?.trim()){
-        throw new ApiError(400, "Username is required")
+
+const getChannel = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    const { username } = req.query;
+
+    if (!username) {
+        throw new ApiError(400, "Username is required");
     }
-    
-    // aggregation pipeline to get subscriber list of the channel
-    const channel = await User.aggregate(
-        [
-            {
-                $match :{
-                    username: username?.toLowerCase()  // 1
-                }
-            },
-            {
-                // Videos list
-                $lookup:{                              // 2
-                    from: "videos",
-                    localField: "_id",   // field in current table
-                    foreignField: "owner",   // field in videos table
-                    as: "videos"          
-                }
-            },
 
-            {
-                // Getting list of channels subscribed to
-                $lookup: {                               // 3
-                    from: "subscriptions",
-                    localField: "_id",
-                    foreignField: "subscriber",
-                    as: "subscribedTo"     // gets all channels i have subbed to
-                }
-            },
-            {
-// Lookup to check if the logged-in user is subscribed to this channel
-                $lookup: {
-                  from: "subscriptions",  // Check in the 'subscriptions' collection
-                  let: { channelId: "$_id" },  // Define a variable 'channelId' as the current user's _id (channel being viewed)
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            // Match subscriptions where the 'channel' field equals the current channel's _id
-                            { $eq: ["$channel", "$$channelId"] },
-
-                            // And where the 'subscriber' field matches the logged-in user's _id
-                            { $eq: ["$subscriber", ObjectId(req.user._id)] }
-                          ]
-                        }
-                      }
-                    }
-                  ],
-                  // Resulting array will be stored in this field
-                  as: "matchedSubscriber"
-                },
-            },
-            {
-                $addFields: {                       // 4
-                    videosCount: { $size: "$videos" },   // referring to previous pipe
-                    ChannelsSubscribedToCount: { $size: "$subscribedTo" },
-
-                // Add a field 'isSubscribed' that checks if the logged-in user is subscribed
-                    isSubscribed: {
-                      // If matchedSubscriber has more than 0 items, the user is subscribed
-                      $gt: [{ $size: "$matchedSubscriber" }, 0]
-                    }
-                              
-                }
-            },
-            {
-               // Project only the necessary data
-                $project: {
-                    fullName: 1,
-                    username: 1,
-                    avatar: 1,
-                    subscribersCount: 1,
-                    ChannelsSubscribedToCount: 1,
-                    isSubscribed: 1,
-                    coverImage: 1,
-                    email: 1
-                } 
+    // Step 1: Fetch channel data + videos + subscriber count
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username.toLowerCase()
             }
-        ]
-    )
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "_id",
+                foreignField: "owner",
+                as: "videos"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel", // people who have subscribed to this channel
+                as: "subscribers"
+            }
+        },
+        {
+            $addFields: {
+                videosCount: { $size: "$videos" },
+                subscribersCount: { $size: "$subscribers" }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                avatar: 1,
+                email: 1,
+                coverImage: 1,
+                videos: 1,
+                videosCount: 1,
+                subscribersCount: 1
+            }
+        }
+    ]);
 
-    // no channel found
-    if(!channel?.length){
-        throw new ApiError(404, "Channel not found")
+    if (!channel || channel.length === 0) {
+        throw new ApiError(404, "Channel not found");
     }
 
-    return res.status(200).json(new ApiResponse(
-        200, 
-        channel[0], 
+    const channelData = channel[0];
+
+    // Step 2: If logged in, check if user is subscribed
+    let isSubscribed = false;
+    if (userId) {
+        isSubscribed = await Subscription.exists({
+            channel: channelData._id,
+            subscriber: userId
+        });
+    }
+
+    // Step 3: Respond with data
+    res.status(200).json(new ApiResponse(
+        200,
+        {
+            ...channelData,
+            isSubscribed: Boolean(isSubscribed)
+        },
         "Channel profile fetched successfully"
-    ))
-})
+    ));
+});
 
-const doesNameHaveSpace = (name) => {
-    return name.split(" ").length > 1   
-}
-
+  
 // Lookup joins document with the from collection
 
 const getWatchHistory = asyncHandler( async (req, res) => {
@@ -607,7 +586,109 @@ export {
     updateAccountDetails,
     updateAvatar,
     updateCoverImage,
-    getUserChannelProfile,
+    getChannel,
     getWatchHistory
 }
 
+
+// Decommissioned API
+const getUserChannelProfile = asyncHandler( async (req, res) => {
+
+    // query parameter will be username
+    const {username} = req.query
+
+    if(!username?.trim()){
+        throw new ApiError(400, "Username is required")
+    }
+    
+    // aggregation pipeline to get subscriber list of the channel
+    const channel = await User.aggregate(
+        [
+            {
+                $match :{
+                    username: username?.toLowerCase()  // 1
+                }
+            },
+            {
+                // Videos list
+                $lookup:{                              // 2
+                    from: "videos",
+                    localField: "_id",   // field in current table
+                    foreignField: "owner",   // field in videos table
+                    as: "videos"          
+                }
+            },
+
+            {
+                // Getting list of channels subscribed to
+                $lookup: {                               // 3
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "subscriber",
+                    as: "subscribedTo"     // gets all channels i have subbed to
+                }
+            },
+            {
+// Lookup to check if the logged-in user is subscribed to this channel
+                $lookup: {
+                  from: "subscriptions",  // Check in the 'subscriptions' collection
+                  let: { channelId: "$_id" },  // Define a variable 'channelId' as the current user's _id (channel being viewed)
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $and: [
+                            // Match subscriptions where the 'channel' field equals the current channel's _id
+                            { $eq: ["$channel", "$$channelId"] },
+
+                            // And where the 'subscriber' field matches the logged-in user's _id
+                            { $eq: ["$subscriber", ObjectId(req.user._id)] }  // convert to object ID before checking
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  // Resulting array will be stored in this field
+                  as: "matchedSubscriber"
+                },
+            },
+            {
+                $addFields: {                       // 4
+                    videosCount: { $size: "$videos" },   // referring to previous pipe
+                    ChannelsSubscribedToCount: { $size: "$subscribedTo" },
+
+                // Add a field 'isSubscribed' that checks if the logged-in user is subscribed
+                    isSubscribed: {
+                      // If matchedSubscriber has more than 0 items, the user is subscribed
+                      $gt: [{ $size: "$matchedSubscriber" }, 0]
+                    }
+                              
+                }
+            },
+            {
+               // Project only the necessary data
+                $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                    subscribersCount: 1,
+                    ChannelsSubscribedToCount: 1,
+                    isSubscribed: 1,
+                    coverImage: 1,
+                    email: 1
+                } 
+            }
+        ]
+    )
+
+    // no channel found
+    if(!channel?.length){
+        throw new ApiError(404, "Channel not found")
+    }
+
+    return res.status(200).json(new ApiResponse(
+        200, 
+        channel[0], 
+        "Channel profile fetched successfully"
+    ))
+})
