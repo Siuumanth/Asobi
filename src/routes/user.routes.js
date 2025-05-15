@@ -42,6 +42,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser);
 router.route("/refresh-token").post(refreshAccessToken);
+router.route("/channel").get( getUserChannelProfile)  // query parameter
 
 
 
@@ -58,7 +59,6 @@ router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 
 router.route("/profile").get(verifyJWT, getCurrentUser)
 
-router.route("/c:/username").get(verifyJWT, getUserChannelProfile)  // query parameter
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)
 
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateAvatar) // as we are expecting a single file, we use single()

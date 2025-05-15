@@ -287,18 +287,22 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 // Logging out user, just clearing cookies and deleting refresh token
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(
-        // TODO: need to come back here after middleware
-        // Now , using middleware, the user object is always available and attached to req, so we will use that to get user Id and clear it from our DB
+    // TODO: need to come back here after middleware
+    // Now , using middleware, the user object is always available and attached to req, so we will use that to get user Id and clear it from our DB
         
+    const updatedDoc = await User.findByIdAndUpdate(
         req.user._id,
         {
             $set: {
-                refreshToken: undefined,
+                refreshToken: "",
             }
         },
         {new: true} //This is a Mongoose-specific option that means: “Return the updated document instead of the old one.”
     )
+    console.log(updatedDoc)
+    if(!updatedDoc){
+        throw new ApiError(500, "Something went wrong while logging out")
+    }
         
     const options = {
         httpOnly: true,
@@ -428,7 +432,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler( async (req, res) => {
 
     // query parameter will be username
-    const {username} = req.params
+    const {username} = req.query
 
     if(!username?.trim()){
         throw new ApiError(400, "Username is required")
@@ -443,14 +447,15 @@ const getUserChannelProfile = asyncHandler( async (req, res) => {
                 }
             },
             {
-                // getting subcribers list
+                // Videos list
                 $lookup:{                              // 2
-                    from: "subscriptions",
+                    from: "videos",
                     localField: "_id",   // field in current table
-                    foreignField: "channel",   // field in subscriptions table
-                    as: "subscribers"          
+                    foreignField: "owner",   // field in videos table
+                    as: "videos"          
                 }
             },
+
             {
                 // Getting list of channels subscribed to
                 $lookup: {                               // 3
@@ -461,19 +466,40 @@ const getUserChannelProfile = asyncHandler( async (req, res) => {
                 }
             },
             {
+// Lookup to check if the logged-in user is subscribed to this channel
+                $lookup: {
+                  from: "subscriptions",  // Check in the 'subscriptions' collection
+                  let: { channelId: "$_id" },  // Define a variable 'channelId' as the current user's _id (channel being viewed)
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $and: [
+                            // Match subscriptions where the 'channel' field equals the current channel's _id
+                            { $eq: ["$channel", "$$channelId"] },
+
+                            // And where the 'subscriber' field matches the logged-in user's _id
+                            { $eq: ["$subscriber", ObjectId(req.user._id)] }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  // Resulting array will be stored in this field
+                  as: "matchedSubscriber"
+                },
+            },
+            {
                 $addFields: {                       // 4
-                    subscribersCount: { $size: "$subscribers" },   // referring to previous pipe
+                    videosCount: { $size: "$videos" },   // referring to previous pipe
                     ChannelsSubscribedToCount: { $size: "$subscribedTo" },
 
-                    // to check if user sending request is subscribed or not
-                    isSubscribed :{
-                        $cond: {
-                            if: {  
-                                $in : [req.user?._id, "$subscribers.subscriber"] ,
-                                // if req user ID is present in subscribers list???
-                            }
-                        }
+                // Add a field 'isSubscribed' that checks if the logged-in user is subscribed
+                    isSubscribed: {
+                      // If matchedSubscriber has more than 0 items, the user is subscribed
+                      $gt: [{ $size: "$matchedSubscriber" }, 0]
                     }
+                              
                 }
             },
             {
@@ -504,6 +530,9 @@ const getUserChannelProfile = asyncHandler( async (req, res) => {
     ))
 })
 
+const doesNameHaveSpace = (name) => {
+    return name.split(" ").length > 1   
+}
 
 // Lookup joins document with the from collection
 
