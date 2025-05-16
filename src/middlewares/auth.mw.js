@@ -19,7 +19,6 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
         // 3. Verify the token using the JWT secret
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-       console.log("jwt is decoded  ", decoded)
 
         // 4. Find the user in the database
         const user = await User.findById(decoded?._id).select("-password -refreshToken");

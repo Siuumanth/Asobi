@@ -6,6 +6,8 @@ users [icon: user] {
     fullName string
     avatar string
     coverImage string
+    subscriberCount number
+    likeCount number
     watchHistory objectId[] videos
     password string
     refreshToken string
@@ -53,6 +55,10 @@ dotenv.config();
       coverImage: {
         type: String, // Cloudinary URL
         required: true,
+      },
+      subscriberCount: {
+        type: Number,
+        default: 0,
       },
       watchHistory: [
         {
