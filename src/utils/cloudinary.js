@@ -13,29 +13,41 @@ cloudinary.config({
 })
 
 //Whenever we upload stuff thru multer, we get a local file path as returning, so we pass that in this function
-const uploadOnCloudinary = async(localFilePath) => {
-    try {
-        if(!localFilePath) return null;
 
-        //uploading to cloudinary
+const uploadOnCloudinary = async (localFilePath) => {
+    try {
+        if (!localFilePath) return null;
+        console.log("Uploading to cloudinary", localFilePath);
+        // Uploading to cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto",
-            // this auto detects file type 
-        }
-    );
-    console.log("File uploaded on cloudinary", response.url);
+        });
 
-    // once the file is uplaoded we would like to delete it from our servers, in node
-    fs.unlinkSync(localFilePath);
-    return response;
+        console.log("File uploaded on cloudinary", response.url);
+
+        // Delete the file only if it exists
+        if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
+
+        return response;
 
     } catch (error) {
-        // if some error happens we will abort uploading and delete file using unlink func
-        console.log(`error in cloudinary ${error}`);
-        fs.unlinkSync(localFilePath);
+        console.log(`Error in Cloudinary: ${error}`);
+
+        // Delete temp file even on failure
+        try {
+            if (fs.existsSync(localFilePath)) {
+                fs.unlinkSync(localFilePath);
+            }
+        } catch (fsError) {
+            console.log("Error deleting local file", fsError);
+        }
+
         throw error;
     }
-}
+};
+
 
 
 //Method for deleting image incase of an error 

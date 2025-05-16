@@ -7,6 +7,7 @@ import fs from "fs";
 
 export const validateVideoUpload = async (req, res, next) => {
     try {
+        console.log("Tryna vaidate video upload")
         const videoFile = req.files?.videoFile?.[0];
         const thumbnailFile = req.files?.thumbnail?.[0];
 
@@ -37,7 +38,13 @@ export const validateVideoUpload = async (req, res, next) => {
         // Get duration
         try {
             const duration = await getVideoDurationInSeconds(videoFile.path);
-            req.body.duration = Math.round(duration);
+            if(duration < 2.0){
+                fs.unlinkSync(videoFile.path);
+                return next(new ApiError(400, "Video must be at least 2 seconds long"));
+            }
+            req.body.duration = duration;
+            console.log("duration is",duration);
+            console.log("validated body is",req.body);
         } catch (err) {
             return next(new ApiError(400, "Failed to extract video duration"));
         }

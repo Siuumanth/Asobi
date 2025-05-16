@@ -22,7 +22,6 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
 
         // 4. Find the user in the database
         const user = await User.findById(decoded?._id).select("-password -refreshToken");
-        console.log("User is ter")
         
         if (!user) {
             console.log("User isss not found")
@@ -31,7 +30,6 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
 
         // 5. Attach user to the request object for later use
         req.user = user;
-        console.log("User is attached")
         // 6. Continue to the next middleware/route
         next();
     } catch (error) {
