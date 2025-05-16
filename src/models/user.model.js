@@ -7,7 +7,6 @@ users [icon: user] {
     avatar string
     coverImage string
     subscriberCount number
-    likeCount number
     watchHistory objectId[] videos
     password string
     refreshToken string

@@ -4,7 +4,7 @@ comments [icon: comment] {
 videos [icon: video] {
   id string pk
   owner objectId users
-  file string
+  video string
   thumbnail string
   title string
   description string

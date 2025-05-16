@@ -52,7 +52,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
 
 // unsecure
 const getVideoById = asyncHandler(async (req, res) => {
-    const { v } = req.params
+    const { v } = req.query
 
     if(!isValidObjectId(v)){
         throw new ApiError(400, "Invalid video id");
@@ -73,14 +73,39 @@ const getVideoById = asyncHandler(async (req, res) => {
             },
         },
         {
+            $unwind: "$owner",
+        },
+        {
             $project: {
-                owner: { $arrayElemAt: ["$owner", 0] },
+                owner: { 
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                    subscriberCount: 1
+                },
+                _id: 1,
+                title: 1,
+                description: 1,
+                thumbnail: 1,
+                video: 1,
+                views: 1,
+                isPublished: 1
             },  
         }
     ])
 
     if(!videoDoc){
         throw new ApiError(404, "Video not found");
+    }
+    
+    const updated = await Video.findByIdAndUpdate(v, {
+        $inc: {
+            views: 1
+        }
+    })
+
+    if(!updated){
+        console.log("Bro updated views")
     }
     
     return res.status(200).json(new ApiResponse(
