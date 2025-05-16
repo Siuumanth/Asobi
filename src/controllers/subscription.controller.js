@@ -8,11 +8,18 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 // secured
 const toggleSubscription = asyncHandler(async (req, res) => {
-    const { channelId } = req.params;
+    let { channelId } = req.params;
     const userId = req.user?._id;
 
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel id");
+    }
+
+    channelId = new mongoose.Types.ObjectId(channelId);
+
+
+    if(channelId.equals(userId)){
+        throw new ApiError(400, "You cannot subscribe to yourself");
     }
 
     // Find the user
@@ -34,15 +41,30 @@ const toggleSubscription = asyncHandler(async (req, res) => {
             subscriber: userId,
             channel: channelId,
         });
+
+        const increaseSubscribersCount = await User.updateOne(
+            { _id: channelId },
+            { $inc: { subscriberCount: 1 } }
+        ).select("subscriberCount");
+
+        if (increaseSubscribersCount.modifiedCount === 0 || subscription === null) {
+            throw new ApiError(400, "Failed to update subscriber count");
+        }
+
     } else {
         // Delete the existing subscription if it exists
         const deleteResult = await Subscription.deleteOne({
             subscriber: userId,
             channel: channelId,
         });
+
+        const decreaseSubscribersCount = await User.updateOne(
+            { _id: channelId },
+            { $inc: { subscriberCount: -1 } }
+        );
         
         // If nothing was deleted, return an error
-        if (deleteResult.deletedCount === 0) {
+        if (deleteResult.deletedCount === 0 || decreaseSubscribersCount.modifiedCount === 0) {
             throw new ApiError(400, "Subscription not found or already removed");
         }
         

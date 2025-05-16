@@ -10,12 +10,12 @@ const router = Router();
 router.use(verifyJWT); 
 
 // route to toggle subscription to a channel (subscribe or unsubscribe)
-router.route("/toggle/subscription/:channelId").post(toggleSubscription);
+router.route("/toggle/:channelId").post(toggleSubscription);
 
 // route to get the list of subscribers for a particular channel
 router.route("/subscribers/:channelId").get(getUserChannelSubscribers);
 
 // route to get the list of channels that a user has subscribed to
-router.route("/subscriptions/:subscriberId").get(getSubscribedChannels);
+router.route("/usersubs/:subscriberId").get(getSubscribedChannels);
 
 export default router;
