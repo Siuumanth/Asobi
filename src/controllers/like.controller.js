@@ -10,10 +10,10 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const toggleLike = asyncHandler(async (req, res) => {
-    const { type, documentId } = req.params;
+    const { type, id } = req.query;
 
     // validate document ID and type
-    if (!isValidObjectId(documentId) || !type) {
+    if (!isValidObjectId(id) || !type) {
         throw new ApiError(400, "Document ID and type are required");
     }
 

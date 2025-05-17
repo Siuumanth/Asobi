@@ -1,0 +1,48 @@
+{
+  "auth": {
+    "register": "/api/v1/users/register",
+    "login": "/api/v1/users/login",
+    "refreshToken": "/api/v1/users/refresh-token",
+    "logout": "/api/v1/users/logout"
+  },
+  "user": {
+    "getProfile": "/api/v1/users/profile",
+    "updateAccount": "/api/v1/users/update-account",
+    "changePassword": "/api/v1/users/change-password",
+    "updateAvatar": "/api/v1/users/avatar",
+    "updateCoverImage": "/api/v1/users/cover-image",
+    "getChannel": "/api/v1/users/channel",
+    "watchHistory": "/api/v1/users/history"
+  },
+  "video": {
+    "getAll": "/api/v1/videos",
+    "getById": "/api/v1/videos/watch",
+    "publish": "/api/v1/videos/publish",
+    "update": "/api/v1/videos",
+    "delete": "/api/v1/videos",
+    "togglePublish": "/api/v1/videos/publish/"
+  },
+  "search": {
+    "all": "/api/v1/search"
+  },
+  "subscription": {
+    "toggle": "/api/v1/subscriptions/toggle/",
+    "getSubscribers": "/api/v1/subscriptions/subscribers/",
+    "getSubscribedChannels": "/api/v1/subscriptions/usersubs/"
+  },
+  "likes": {
+    "toggleLike": "/api/v1/likes/toggle/",
+    "likedVideos": "/api/v1/likes/videos"
+  },
+  "comments": {
+    "getComments": "/api/v1/comments/",
+    "add": "/api/v1/comments/add",
+    "update": "/api/v1/comments/update/",
+    "delete": "/api/v1/comments/del/"
+  },
+  "tweet": {
+    "getUserTweets": "/api/v1/tweets/user/",
+    "create": "/api/v1/tweets",
+    "delete": "/api/v1/tweets/tweet/"
+  }
+}

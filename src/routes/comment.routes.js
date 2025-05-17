@@ -10,18 +10,18 @@ import { verifyJWT } from "../middlewares/auth.mw.js";
 const router = Router();
 
 // get all comments for a video (paginated)
-router.route("/comments/:videoId").get(getVideoComments);
+router.route("/:videoId").get(getVideoComments);
 
 
 router.use(verifyJWT);
 
 // add a comment 
-router.route("/comments").post(addComment);
+router.route("/add").post(addComment);
 
 // update a comment
-router.route("/comments/:commentId").put(updateComment);
+router.route("/update/:commentId").put(updateComment);
 
 //  delete a comment
-router.route("/comments/:commentId").delete(deleteComment);
+router.route("/del/:commentId").delete(deleteComment);
 
 export default router;
