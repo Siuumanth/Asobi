@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import searchRoutes from "./routes/search.routes.js";
+
+
 const app = express()
 
 app.use(cookieParser());
@@ -38,6 +41,8 @@ app.use("/api/v1/subscriptions",subscriptionRouter)
 app.use("/api/v1/likes",likeRouter)
 app.use("/api/v1/tweets",tweetRouter)
 app.use("/api/v1/comments",commentRouter)
+app.use("/api/v1/search", searchRoutes);
+
 app.use(errorHandler)
 
 
