@@ -3,11 +3,20 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import rateLimiter from "express-rate-limit";
 import searchRoutes from "./routes/search.routes.js";
 
 
 const app = express()
+
+// Rate limiter
+let limiter = rateLimiter({
+  max: 5,
+  outerTimeLimit: 60 * 60 * 1000,    // max 300 requests per hour
+  message: "Too many requests from this IP, please try again after a while"
+})
+
+app.use('/api', limiter)   // uses limiter on all api URLs
 
 app.use(cookieParser());
 
