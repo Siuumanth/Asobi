@@ -4,6 +4,14 @@ ASOBI is the backend of a YouTube-inspired video sharing platform. Built with **
 
 ---
 
+## Schema:
+
+![schema](https://github.com/Siuumanth/Asobi/tree/main/Asobi-notes/schema.png?raw=true)
+
+
+---
+
+
 ## Features
 
 - JWT-based authentication (login, register, logout, refresh-token)

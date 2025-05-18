@@ -9,7 +9,7 @@ const router = Router();
 router.use(verifyJWT); // making all routes secure
 
 // like and unlike
-router.route("/toggle/:type/:documentId").post(toggleLike);
+router.route("/toggle/:type/:id").post(toggleLike);
 
 router.route("/videos").get(getLikedVideos);
 

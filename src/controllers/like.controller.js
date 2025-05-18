@@ -10,7 +10,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const toggleLike = asyncHandler(async (req, res) => {
-    const { type, id } = req.query;
+    const { type, id } = req.params;
 
     // validate document ID and type
     if (!isValidObjectId(id) || !type) {
@@ -35,17 +35,17 @@ const toggleLike = asyncHandler(async (req, res) => {
     switch (type) {
 
         case "video":
-            originalDoc = await Video.findById(documentId);
+            originalDoc = await Video.findById(id);
             if (!originalDoc) throw new ApiError(404, "Video not found");
             break;
 
         case "comment":
-            originalDoc = await Comment.findById(documentId);
+            originalDoc = await Comment.findById(id);
             if (!originalDoc) throw new ApiError(404, "Comment not found");
             break;
 
         case "tweet":
-            originalDoc = await Tweet.findById(documentId);
+            originalDoc = await Tweet.findById(id);
             if (!originalDoc) throw new ApiError(404, "Tweet not found");
             break;
 
@@ -56,7 +56,7 @@ const toggleLike = asyncHandler(async (req, res) => {
     // check if user has already liked the document
     const existingLike = await Like.findOne({
         likedBy: userId,
-        targetId: documentId,
+        targetId: id,
         targetType: type
     });
 
@@ -68,7 +68,7 @@ const toggleLike = asyncHandler(async (req, res) => {
         // create a new like
         result = await Like.create({
             likedBy: userId,
-            targetId: documentId,
+            targetId: id,
             targetType: type
         });
         action = "liked";

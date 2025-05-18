@@ -11,11 +11,11 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const {videoId} = req.params
     const {page = 1, limit = 10} = req.query
 
-    if(!videoId || !isValidObjectId(videoId)){
+    if(!videoId){
         throw new ApiError(400, "Video id not provided")
     }
 
-    const video = await Video.findById(videoId);
+    const video = await Video.findById(new mongoose.Types.ObjectId(videoId));
 
     if(!video){
         throw new ApiError(404, "Video not found")
@@ -59,7 +59,7 @@ const addComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video id and comment are required")
     }
 
-    const video = await Video.findOne(videoId);
+    const video = await Video.findOne(new mongoose.Types.ObjectId(videoId));
     if(!video){
         throw new ApiError(404, "Video not found")
     }
@@ -91,8 +91,8 @@ const updateComment = asyncHandler(async (req, res) => {
     }
 
     const newComment = await Comment.findOneAndUpdate({
-        _id: commentId,
-        owner: userId
+        _id: new mongoose.Types.ObjectId(commentId),
+        owner: new mongoose.Types.ObjectId(userId)
     }, {
         content: comment
     }, {

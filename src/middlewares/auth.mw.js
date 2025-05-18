@@ -8,9 +8,8 @@ import {ApiError} from "../utils/ApiError.js"
 // This function attaches user info to the request object
 const verifyJWT = asyncHandler(async (req, _, next) => {
     // 1. Extract token from cookie or Authorization header
-    console.log("Starting verification")
     const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ", "");
-
+ console.log("Staring verrification")
     // 2. If token doesn't exist, user is unauthorized
     if (!token) {
         throw new ApiError(401, "Unauthorized - No token provided");
