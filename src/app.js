@@ -11,7 +11,7 @@ const app = express()
 
 // Rate limiter
 let limiter = rateLimiter({
-  max: 5,
+  max: 300,
   outerTimeLimit: 60 * 60 * 1000,    // max 300 requests per hour
   message: "Too many requests from this IP, please try again after a while"
 })
